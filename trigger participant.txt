@@ -1,0 +1,10 @@
+trigger participant on Participant__c (after insert) {
+
+    if(trigger.isAfter){
+        if(trigger.isInsert){
+            participantTrigger.particiantInserted(trigger.new);
+        }
+        
+    }
+    
+}

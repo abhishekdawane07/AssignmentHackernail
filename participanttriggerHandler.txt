@@ -1,0 +1,54 @@
+public class participantTrigger {
+    
+    public static void particiantInserted(list<Participant__c >newList){
+        
+        
+        set<id>meetingIds = new set<id>();
+        for(Participant__c p :  newList){
+            if(p.Meeting__c != null){
+                meetingIds.add(p.Meeting__c);
+            }
+        }
+        
+        List<Meeting__c>mList = [select Id,(select Id from Participants__r) from Meeting__c where ID IN :meetingIds];
+        
+        List<Meeting__c>meetList = new  List<Meeting__c>();
+        
+        for(Meeting__c m : mList){
+            m.Registered_Participants__c = m.Participants__r.size();
+            meetList.add(m);
+        }
+        update meetList;
+        
+    }
+    
+    
+    //Update the Status__c field on Meeting__c to Full when Remaining_Capacity__c equals 0.
+
+    public static void updateStatus(List<Meeting__c>newList,Map<id,Meeting__c>oldMap){
+        
+        Set<Id> meetingIdsToUpdate = new Set<Id>();
+      
+        map<id,Meeting__c>meetMap = new map<id,Meeting__c>();
+        
+        for (Meeting__c meeting :newList) {
+            if(oldMap == null && meeting.Status__c !=null || oldMap !=null && oldMap.get(meeting.Id).Status__c != meeting.Status__c){
+                meetMap.put(meeting.Id,meeting);
+        }
+        }
+        if (!meetingIdsToUpdate.isEmpty()) {
+            
+            List<Meeting__c> meetingsToUpdate = [SELECT Id, Remaining_Capacity__c, Status__c FROM Meeting__c WHERE Id IN :meetingIdsToUpdate];
+            for (Meeting__c meetings : meetingsToUpdate) {
+                if (meetings.Remaining_Capacity__c == 0 && meetings.Status__c != 'Full') {
+                    meetings.Status__c = 'Full';
+                }
+            }
+             
+            if (!meetingsToUpdate.isEmpty()) {
+                update meetingsToUpdate;
+            }
+        }
+    }
+    
+}

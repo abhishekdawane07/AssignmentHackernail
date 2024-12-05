@@ -1,0 +1,10 @@
+trigger meeting on Meeting__c (after update) {
+
+     if(trigger.isAfter){
+        if(trigger.isupdate){
+            participantTrigger.updateStatus(trigger.new,null);
+            participantTrigger.updateStatus(trigger.new,trigger.oldMap);
+        }
+        
+    }
+}
